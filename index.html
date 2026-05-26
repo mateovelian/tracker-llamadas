@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tracker Llamadas · @mateovelian</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #06060a; --bg2: #0c0c14; --bg3: #12121e;
+  --gold: #b8976a; --gold2: #d4b896; --cream: #f0ece4;
+  --muted: #444454; --dim: #1a1a28;
+  --captado: #2a7a4a; --seguimiento: #3a6ab8;
+  --volver: #7a4ab8; --no-cogio: #888; --buzon: #c07830; --no-interes: #cc4444;
+}
+body { background: var(--bg); font-family: 'Montserrat', sans-serif; color: var(--cream); min-height: 100vh; padding-bottom: 80px; }
+
+/* HEADER */
+.header { background: var(--bg2); border-bottom: 1px solid #ffffff08; padding: 18px 20px 14px; position: sticky; top: 0; z-index: 100; }
+.header-brand { font-size: 7px; letter-spacing: 5px; color: var(--gold); text-transform: uppercase; margin-bottom: 3px; }
+.header-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+.header-title { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; }
+.header-date { font-size: 8px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+.progress-bar { height: 3px; background: var(--dim); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+.progress-fill { height: 100%; background: linear-gradient(to right, var(--gold), var(--gold2)); border-radius: 2px; transition: width 0.4s; width: 0%; }
+.mini-stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.ms { background: var(--bg3); border-radius: 6px; padding: 7px 4px; text-align: center; border: 1px solid #ffffff05; }
+.ms-n { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 300; line-height: 1; }
+.ms-l { font-size: 6px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+.ms.t .ms-n { color: var(--gold); }
+.ms.c .ms-n { color: var(--captado); }
+.ms.s .ms-n { color: var(--seguimiento); }
+.ms.v .ms-n { color: var(--volver); }
+.ms.nc .ms-n { color: var(--no-cogio); }
+.ms.ni .ms-n { color: var(--no-interes); }
+
+/* ADD */
+.add-section { padding: 14px 20px; background: var(--bg2); border-bottom: 1px solid #ffffff08; }
+.add-label { font-size: 7px; letter-spacing: 4px; color: var(--gold); text-transform: uppercase; margin-bottom: 10px; }
+.inputs-row { display: flex; gap: 8px; margin-bottom: 10px; }
+.inp {
+  flex: 1; background: var(--bg3); border: 1px solid var(--dim);
+  color: var(--cream); padding: 10px 12px; border-radius: 6px;
+  font-family: 'Montserrat', sans-serif; font-size: 11px; outline: none;
+  transition: border 0.2s;
+}
+.inp::placeholder { color: var(--muted); }
+.inp:focus { border-color: var(--gold); }
+.inp.tel { flex: 0 0 150px; }
+.inp.notas { flex: 2; }
+
+/* RESULT BUTTONS */
+.results-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }
+.rb {
+  padding: 10px 8px; border-radius: 8px; border: 1px solid var(--dim);
+  background: var(--bg3); color: var(--muted); cursor: pointer;
+  font-family: 'Montserrat', sans-serif; font-size: 9px;
+  letter-spacing: 1px; text-transform: uppercase; text-align: center;
+  transition: all 0.15s; line-height: 1.3;
+}
+.rb:hover { border-color: var(--gold); color: var(--gold); }
+.rb.sel-captado      { background: #2a7a4a22; border-color: var(--captado);    color: var(--captado); }
+.rb.sel-seguimiento  { background: #3a6ab822; border-color: var(--seguimiento); color: var(--seguimiento); }
+.rb.sel-volver       { background: #7a4ab822; border-color: var(--volver);      color: var(--volver); }
+.rb.sel-no-cogio     { background: #88888822; border-color: var(--no-cogio);    color: var(--no-cogio); }
+.rb.sel-buzon        { background: #c0783022; border-color: var(--buzon);       color: var(--buzon); }
+.rb.sel-no-interes   { background: #cc444422; border-color: var(--no-interes);  color: var(--no-interes); }
+
+.add-btn {
+  width: 100%; padding: 11px; background: var(--gold); color: var(--bg);
+  border: none; border-radius: 8px; cursor: pointer;
+  font-family: 'Montserrat', sans-serif; font-size: 9px;
+  letter-spacing: 2px; text-transform: uppercase; font-weight: 700;
+  transition: all 0.2s;
+}
+.add-btn:hover:not(:disabled) { background: var(--gold2); }
+.add-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* LIST */
+.calls-section { padding: 14px 20px; }
+.calls-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.calls-title { font-size: 7px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; }
+.filter-row { display: flex; gap: 5px; }
+.fb {
+  padding: 4px 10px; border-radius: 20px; border: 1px solid var(--dim);
+  background: transparent; color: var(--muted); font-size: 7px;
+  letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
+  font-family: 'Montserrat', sans-serif; transition: all 0.15s;
+}
+.fb.active { border-color: var(--gold); color: var(--gold); }
+
+.calls-list { display: flex; flex-direction: column; gap: 5px; }
+.call-item {
+  background: var(--bg2); border: 1px solid #ffffff05;
+  border-radius: 8px; padding: 11px 12px;
+  display: flex; align-items: center; gap: 10px;
+  animation: fi 0.2s ease;
+}
+@keyframes fi { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+.call-n { font-family: 'Cormorant Garamond', serif; font-size: 16px; color: var(--muted); width: 24px; text-align: center; flex-shrink: 0; }
+.call-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.call-dot.captado     { background: var(--captado); }
+.call-dot.seguimiento { background: var(--seguimiento); }
+.call-dot.volver      { background: var(--volver); }
+.call-dot.no-cogio    { background: var(--no-cogio); }
+.call-dot.buzon       { background: var(--buzon); }
+.call-dot.no-interes  { background: var(--no-interes); }
+.call-info { flex: 1; min-width: 0; }
+.call-name { font-size: 12px; color: var(--cream); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.call-sub { font-size: 9px; color: var(--muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.call-badge {
+  font-size: 7px; letter-spacing: 1px; text-transform: uppercase;
+  padding: 3px 7px; border-radius: 20px; flex-shrink: 0;
+}
+.call-badge.captado     { background: #2a7a4a22; color: var(--captado);    border: 1px solid var(--captado); }
+.call-badge.seguimiento { background: #3a6ab822; color: var(--seguimiento); border: 1px solid var(--seguimiento); }
+.call-badge.volver      { background: #7a4ab822; color: var(--volver);      border: 1px solid var(--volver); }
+.call-badge.no-cogio    { background: #88888822; color: var(--no-cogio);    border: 1px solid var(--no-cogio); }
+.call-badge.buzon       { background: #c0783022; color: var(--buzon);       border: 1px solid var(--buzon); }
+.call-badge.no-interes  { background: #cc444422; color: var(--no-interes);  border: 1px solid var(--no-interes); }
+.call-time { font-size: 8px; color: var(--muted); flex-shrink: 0; }
+.call-del { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 14px; padding: 2px 4px; transition: color 0.15s; }
+.call-del:hover { color: var(--no-interes); }
+
+.empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 11px; line-height: 2; }
+
+/* STATS BTN */
+.stats-fab {
+  position: fixed; bottom: 20px; right: 20px;
+  background: var(--gold); color: var(--bg); border: none;
+  border-radius: 50px; padding: 13px 22px;
+  font-family: 'Montserrat', sans-serif; font-size: 8px;
+  letter-spacing: 2px; text-transform: uppercase; font-weight: 700;
+  cursor: pointer; box-shadow: 0 8px 30px #b8976a44; transition: all 0.2s; z-index: 200;
+}
+.stats-fab:hover { background: var(--gold2); transform: translateY(-2px); }
+
+/* MODAL */
+.overlay { position: fixed; inset: 0; background: #000000cc; z-index: 300; display: flex; align-items: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+.overlay.open { opacity: 1; pointer-events: all; }
+.modal { background: var(--bg2); width: 100%; border-radius: 20px 20px 0 0; border: 1px solid #ffffff08; padding: 24px; transform: translateY(20px); transition: transform 0.2s; max-height: 85vh; overflow-y: auto; }
+.overlay.open .modal { transform: translateY(0); }
+.modal-title { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 300; margin-bottom: 4px; }
+.modal-sub { font-size: 7px; color: var(--muted); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 18px; }
+.conv-box { background: var(--bg3); border-radius: 10px; padding: 16px; text-align: center; margin-bottom: 18px; border: 1px solid var(--dim); }
+.conv-num { font-family: 'Cormorant Garamond', serif; font-size: 56px; font-weight: 300; color: var(--gold); line-height: 1; }
+.conv-lbl { font-size: 7px; color: var(--muted); letter-spacing: 3px; text-transform: uppercase; margin-top: 6px; }
+.stat-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-bottom: 1px solid #ffffff06; }
+.stat-row:last-child { border: none; }
+.stat-lbl { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.sdot { width: 7px; height: 7px; border-radius: 50%; }
+.stat-right { text-align: right; }
+.stat-num { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 300; }
+.stat-pct { font-size: 8px; color: var(--muted); }
+.modal-close { width: 100%; margin-top: 18px; background: var(--dim); color: var(--muted); border: none; border-radius: 8px; padding: 12px; font-family: 'Montserrat', sans-serif; font-size: 8px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-brand">Velian Group · Captación</div>
+  <div class="header-row">
+    <div class="header-title">Tracker de Llamadas</div>
+    <div class="header-date" id="hDate"></div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="pFill"></div></div>
+  <div class="mini-stats">
+    <div class="ms t"><div class="ms-n" id="sT">0</div><div class="ms-l">Total</div></div>
+    <div class="ms c"><div class="ms-n" id="sC">0</div><div class="ms-l">Captado</div></div>
+    <div class="ms s"><div class="ms-n" id="sS">0</div><div class="ms-l">Seguim.</div></div>
+    <div class="ms v"><div class="ms-n" id="sV">0</div><div class="ms-l">Volver</div></div>
+    <div class="ms nc"><div class="ms-n" id="sNC">0</div><div class="ms-l">No cogió</div></div>
+    <div class="ms ni"><div class="ms-n" id="sNI">0</div><div class="ms-l">No interés</div></div>
+  </div>
+</div>
+
+<div class="add-section">
+  <div class="add-label">Nueva llamada</div>
+  <div class="inputs-row">
+    <input class="inp" id="iName" placeholder="Nombre del propietario" type="text">
+    <input class="inp tel" id="iTel" placeholder="Teléfono" type="tel">
+  </div>
+  <input class="inp notas" id="iNotes" placeholder="Notas (dirección, tipo de propiedad...)" type="text" style="width:100%;margin-bottom:10px">
+  <div class="results-grid">
+    <button class="rb" data-r="captado"     onclick="sel('captado')">✓ Captado</button>
+    <button class="rb" data-r="seguimiento" onclick="sel('seguimiento')">→ Seguimiento</button>
+    <button class="rb" data-r="volver"      onclick="sel('volver')">↻ Volver a llamar</button>
+    <button class="rb" data-r="no-cogio"    onclick="sel('no-cogio')">✗ No cogió</button>
+    <button class="rb" data-r="buzon"       onclick="sel('buzon')">⊠ Buzón</button>
+    <button class="rb" data-r="no-interes"  onclick="sel('no-interes')">— No interés</button>
+  </div>
+  <button class="add-btn" id="addBtn" onclick="addCall()" disabled>+ Registrar llamada</button>
+</div>
+
+<div class="calls-section">
+  <div class="calls-header">
+    <div class="calls-title">Registro del día</div>
+    <div class="filter-row">
+      <button class="fb active" onclick="setF('all',this)">Todas</button>
+      <button class="fb" onclick="setF('captado',this)">Captados</button>
+      <button class="fb" onclick="setF('seguimiento',this)">Seguim.</button>
+    </div>
+  </div>
+  <div class="calls-list" id="callsList"></div>
+</div>
+
+<button class="stats-fab" onclick="openStats()">📊 Estadísticas del día</button>
+
+<div class="overlay" id="overlay" onclick="closeStats(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title">Resumen del día</div>
+    <div class="modal-sub" id="mDate"></div>
+    <div class="conv-box">
+      <div class="conv-num" id="mConv">0%</div>
+      <div class="conv-lbl">Tasa de captación (captados / total llamadas)</div>
+    </div>
+    <div id="mStats"></div>
+    <button class="modal-close" onclick="closeStats()">Cerrar</button>
+  </div>
+</div>
+
+<script>
+const TODAY = new Date().toISOString().split('T')[0];
+let calls = JSON.parse(localStorage.getItem('vcalls_' + TODAY) || '[]');
+let selR = null;
+let filter = 'all';
+
+const RESULTS = {
+  'captado':     { label: 'Captado',          color: '#2a7a4a', cls: 'captado' },
+  'seguimiento': { label: 'Seguimiento',       color: '#3a6ab8', cls: 'seguimiento' },
+  'volver':      { label: 'Volver a llamar',   color: '#7a4ab8', cls: 'volver' },
+  'no-cogio':    { label: 'No cogió',          color: '#888888', cls: 'no-cogio' },
+  'buzon':       { label: 'Buzón',             color: '#c07830', cls: 'buzon' },
+  'no-interes':  { label: 'No interés',        color: '#cc4444', cls: 'no-interes' },
+};
+
+function save() { localStorage.setItem('vcalls_' + TODAY, JSON.stringify(calls)); }
+
+async function saveToSheet(call) {
+  const SHEET_URL = 'https://script.google.com/macros/s/AKfycby_Y3vzdRYNww2zLWKE0EWzrUYvjOVih1Ks7Pq_brDznZ5OYko1xNh5ftpjPXNDKiEE/exec';
+  try {
+    await fetch(SHEET_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fecha: new Date().toLocaleDateString('es-ES'),
+        hora: call.time,
+        nombre: call.name,
+        telefono: call.tel || '',
+        resultado: RESULTS[call.result].label,
+        notas: call.notes || ''
+      })
+    });
+    showSyncStatus('✓ Guardado en Sheet');
+  } catch(err) {
+    showSyncStatus('⚠ Error al guardar');
+  }
+}
+
+function showSyncStatus(msg) {
+  let el = document.getElementById('syncStatus');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'syncStatus';
+    el.style.cssText = 'position:fixed;top:10px;right:10px;background:#0c0c14;border:1px solid #b8976a;color:#b8976a;padding:8px 14px;border-radius:20px;font-size:9px;letter-spacing:2px;text-transform:uppercase;z-index:999;transition:opacity 0.5s';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.opacity = '1';
+  setTimeout(() => el.style.opacity = '0', 2500);
+}
+
+function sel(r) {
+  selR = r;
+  document.querySelectorAll('.rb').forEach(b => {
+    b.className = 'rb';
+    if (b.dataset.r === r) b.className = 'rb sel-' + r;
+  });
+  document.getElementById('addBtn').disabled = false;
+}
+
+function addCall() {
+  if (!selR) return;
+  const name  = document.getElementById('iName').value.trim() || ('Prop. ' + (calls.length + 1));
+  const tel   = document.getElementById('iTel').value.trim();
+  const notes = document.getElementById('iNotes').value.trim();
+  const now   = new Date();
+  const time  = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  const newCall = { id: Date.now(), name, tel, notes, result: selR, time };
+  calls.unshift(newCall);
+  save();
+  saveToSheet(newCall);
+  document.getElementById('iName').value = '';
+  document.getElementById('iTel').value = '';
+  document.getElementById('iNotes').value = '';
+  selR = null;
+  document.querySelectorAll('.rb').forEach(b => b.className = 'rb');
+  document.getElementById('addBtn').disabled = true;
+  render();
+  document.getElementById('iName').focus();
+}
+
+function delCall(id) {
+  calls = calls.filter(c => c.id !== id);
+  save(); render();
+}
+
+function setF(f, btn) {
+  filter = f;
+  document.querySelectorAll('.fb').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function getCounts() {
+  const c = {};
+  Object.keys(RESULTS).forEach(k => c[k] = 0);
+  calls.forEach(x => { if (c[x.result] !== undefined) c[x.result]++; });
+  return c;
+}
+
+function render() {
+  const total = calls.length;
+  const c = getCounts();
+  document.getElementById('sT').textContent  = total;
+  document.getElementById('sC').textContent  = c['captado'];
+  document.getElementById('sS').textContent  = c['seguimiento'];
+  document.getElementById('sV').textContent  = c['volver'];
+  document.getElementById('sNC').textContent = c['no-cogio'];
+  document.getElementById('sNI').textContent = c['no-interes'];
+  document.getElementById('pFill').style.width = Math.min((total/100)*100, 100) + '%';
+
+  const list = document.getElementById('callsList');
+  const shown = filter === 'all' ? calls : calls.filter(x => x.result === filter);
+  if (!shown.length) {
+    list.innerHTML = '<div class="empty">📞<br>Sin llamadas registradas aún.<br>Añade la primera arriba.</div>';
+    return;
+  }
+  list.innerHTML = shown.map(c => {
+    const num = calls.indexOf(c) + 1;
+    const r = RESULTS[c.result];
+    const sub = [c.tel, c.notes].filter(Boolean).join(' · ');
+    return `<div class="call-item">
+      <div class="call-n">${num}</div>
+      <div class="call-dot ${r.cls}"></div>
+      <div class="call-info">
+        <div class="call-name">${c.name}</div>
+        ${sub ? `<div class="call-sub">${sub}</div>` : ''}
+      </div>
+      <div class="call-badge ${r.cls}">${r.label}</div>
+      <div class="call-time">${c.time}</div>
+      <button class="call-del" onclick="delCall(${c.id})">×</button>
+    </div>`;
+  }).join('');
+}
+
+function openStats() {
+  const total = calls.length;
+  const c = getCounts();
+  const conv = total > 0 ? Math.round((c['captado']/total)*100) : 0;
+  document.getElementById('mConv').textContent = conv + '%';
+  const now = new Date();
+  document.getElementById('mDate').textContent = now.toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' }).toUpperCase();
+  document.getElementById('mStats').innerHTML = Object.entries(RESULTS).map(([k, r]) =>
+    `<div class="stat-row">
+      <div class="stat-lbl"><div class="sdot" style="background:${r.color}"></div>${r.label}</div>
+      <div class="stat-right">
+        <div class="stat-num" style="color:${r.color}">${c[k]}</div>
+        <div class="stat-pct">${total > 0 ? Math.round((c[k]/total)*100) : 0}% del total</div>
+      </div>
+    </div>`
+  ).join('');
+  document.getElementById('overlay').classList.add('open');
+}
+
+function closeStats(e) {
+  if (!e || e.target === document.getElementById('overlay'))
+    document.getElementById('overlay').classList.remove('open');
+}
+
+// Date
+const n = new Date();
+document.getElementById('hDate').textContent = n.toLocaleDateString('es-ES', { day:'numeric', month:'short' }).toUpperCase();
+
+// Enter key
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && selR) addCall(); });
+
+render();
+</script>
+</body>
+</html>
